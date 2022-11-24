@@ -1,13 +1,24 @@
 
 import csv
 import json
+import os
 import time
 
-import openpyxl
+import chromedriver_autoinstaller
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
+
+def download_chromedriver():
+    chrome_ver = chromedriver_autoinstaller.get_chrome_version().split('.')[0]
+    driver_path = f'./{chrome_ver}/chromedriver.exe'
+    if os.path.exists(driver_path):
+        print(f"chrom driver is installed: {driver_path}")
+    else:
+        print(f"install the chrome driver(ver: {chrome_ver})")
+        chromedriver_autoinstaller.install(True)
+    return driver_path
 
 def scraping_achievement():
     url = "https://virginia.jimu.kyutech.ac.jp/"
@@ -19,15 +30,15 @@ def scraping_achievement():
     time.sleep(1)
     soup = BeautifulSoup(driver.page_source, "html.parser")
     achievement_details = get_achievement_details(soup)
-    print(achievement_details)
     output_csv(achievement_details,".")
 
 
 def open_url_link(url: str):
+    driver_path = download_chromedriver()
     option = webdriver.ChromeOptions()
     option.add_argument("--headless")
     option.add_argument("--disable-dev-shm-usage")
-    driver = webdriver.Chrome(options=option)
+    driver = webdriver.Chrome(executable_path=f"{driver_path}".replace('.exe','').replace('./',''),options=option)
     driver.get(url)
     driver.find_element(By.XPATH, '//a[@href="JavaScript:openShibbolethWin()"]').click()
     driver.switch_to.window(driver.window_handles[1])
@@ -93,4 +104,5 @@ def get_user_info():
             "user_id": user_id,
             "user_password" : user_password
         }
-scraping_achievement()
+if __name__ == "__main__":
+    scraping_achievement()
