@@ -28,6 +28,8 @@ def scraping_achievement():
     time.sleep(1)
     driver.find_element(By.XPATH, '''//a[@onclick="dbLinkClick('/kyoumu/seisekiSearchStudentInit.do?mainMenuCode=008&parentMenuCode=007');"]''').click()
     time.sleep(1)
+    driver.find_element(By.XPATH, '''//a[contains(@href,"/kyoumu/seisekiRishuStudentInit.do?refStudentCode")]''').click()
+    time.sleep(2)
     soup = BeautifulSoup(driver.page_source, "html.parser")
     achievement_details = get_achievement_details(soup)
     output_csv(achievement_details,".")
@@ -56,16 +58,17 @@ def get_achievement_details(soup):
     achievement_table_elements = soup.find_all('tr',bgcolor="#FFFFCC")
     for achievement_table_element in achievement_table_elements:
         achievement_table_element_details = achievement_table_element.find_all('td')
-        return_dicts.append(
-            {
-                "科目名":replace_tag(achievement_table_element_details[0].text),
-                "科目区分":replace_tag(achievement_table_element_details[3].text),
-                "単位区分":replace_tag(achievement_table_element_details[4].text),
-                "単位数":replace_tag(achievement_table_element_details[5].text),
-                "得点":replace_tag(achievement_table_element_details[6].text),
-                "評価":replace_tag(achievement_table_element_details[7].text),
-            }
-        )
+        if replace_tag(achievement_table_element_details[9].text) != "":
+            return_dicts.append(
+                {
+                    "科目名":replace_tag(achievement_table_element_details[3].text),
+                    "科目区分":replace_tag(achievement_table_element_details[6].text),
+                    "単位区分":replace_tag(achievement_table_element_details[7].text),
+                    "単位数":replace_tag(achievement_table_element_details[8].text),
+                    "得点":replace_tag(achievement_table_element_details[9].text),
+                    "評価":replace_tag(achievement_table_element_details[10].text),
+                }
+            )
     return return_dicts
 def output_csv(output_dicts:list,output_path:str):
     header = [
